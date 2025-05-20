@@ -38,9 +38,15 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
   console.log("Client connected");
 
+  const username = socket.handshake.query.username;
+
+  console.log("username:", username);
+
   // receiving the messages on existing websocket conn sent on the event: 'chat msg'
   socket.on("chat msg", (msg) => {
-    console.log("Received msg:" + msg);
+    console.log("Received msg:" + msg.text);
+    console.log("sender:" + msg.sender);
+    console.log("receiver:" + msg.receiver);
 
     // broadcasting/send the message for all the conn clients with the event 'chat msg' except the current socket conn.
     socket.broadcast.emit("chat msg", msg);
