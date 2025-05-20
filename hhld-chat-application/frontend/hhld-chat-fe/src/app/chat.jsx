@@ -21,7 +21,10 @@ const Chat = () => {
     const newSocket = io("http://localhost:8080");
 
     newSocket.on("chat msg", (msg) => {
-      setMessages((prevMsgs) => [...prevMsgs, msg]);
+      setMessages((prevMsgs) => [
+        ...prevMsgs,
+        { text: msg, sentByCurrUser: false },
+      ]);
     });
 
     setSocket(newSocket);
@@ -51,7 +54,10 @@ const Chat = () => {
         console.log("response from server:" + res);
       });
 
-      setMessages((prevMsgs) => [...prevMsgs, msg]);
+      setMessages((prevMsgs) => [
+        ...prevMsgs,
+        { text: msg, sentByCurrUser: true },
+      ]);
 
       setMsg("");
     }
@@ -75,8 +81,11 @@ const Chat = () => {
     <div className="h-screen flex flex-col">
       <div className="msgs-container h-4/5 overflow-scroll">
         {messages.map((msg, index) => (
-          <div key={index} className="m-5 text-right">
-            {msg}
+          <div
+            key={index}
+            className={`m-5 ${msg.sentByCurrUser ? `text-right` : `text-left`}`}
+          >
+            {msg.text}
           </div>
         ))}
       </div>
