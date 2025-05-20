@@ -21,7 +21,7 @@ export const signup = async (req, res) => {
 
       generateJWTTokenAndSetCookie(user._id, res);
 
-      res.status(200).json({ message: "User signed up successfully" });
+      res.status(201).json({ message: "User signed up successfully" });
     }
   } catch (error) {
     console.log("error in controller:" + error.message);
