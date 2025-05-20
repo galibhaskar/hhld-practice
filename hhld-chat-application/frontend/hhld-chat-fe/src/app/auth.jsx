@@ -27,8 +27,8 @@ export const Auth = () => {
 
       if (response.status == HttpStatusCode.Created) {
         alert("User Created");
-      } else {
-        alert("error");
+
+        router.replace("/chat");
       }
     } catch (error) {
       console.log(error.message);
@@ -37,19 +37,21 @@ export const Auth = () => {
 
   const login = async (event) => {
     event.preventDefault();
-    
+
     try {
       const payload = {
         username: userName,
         password: password,
       };
 
-      const response = await axios.post(`${AUTH_DOMAIN}/login`, payload);
+      const response = await axios.post(`${AUTH_DOMAIN}/login`, payload, {
+        withCredentials: true,
+      });
 
       if (response.status == HttpStatusCode.Created) {
         alert("login success");
 
-        router.push("/chat");
+        router.replace("/chat");
       }
     } catch (error) {
       alert("login failed");

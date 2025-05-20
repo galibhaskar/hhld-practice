@@ -12,13 +12,11 @@ const Chat = () => {
   const createSocket = useCallback(() => {
     console.log("create socket function");
 
-    if (socket) {
-      socket.disconnect();
-
-      setSocket(null);
-    }
-
-    const newSocket = io("http://localhost:8080");
+    const newSocket = io("http://localhost:8080", {
+      query: {
+        username: "bhask",
+      },
+    });
 
     newSocket.on("chat msg", (msg) => {
       setMessages((prevMsgs) => [
@@ -27,8 +25,14 @@ const Chat = () => {
       ]);
     });
 
-    setSocket(newSocket);
-  }, [socket]);
+    setSocket((prevSocket) => {
+      if (prevSocket) {
+        prevSocket.disconnect();
+      }
+
+      return newSocket;
+    });
+  }, []);
 
   useEffect(() => {
     // Establish WebSocket connection
@@ -49,14 +53,20 @@ const Chat = () => {
     e.preventDefault();
 
     if (socket) {
+      const msgToBeSent = {
+        text: msg,
+        sender: "bhask",
+        receiver: "keerthi",
+      };
+
       // send message with event 'chat msg' and receive response for ack.
-      socket.emit("chat msg", msg, (res) => {
+      socket.emit("chat msg", msgToBeSent, (res) => {
         console.log("response from server:" + res);
       });
 
       setMessages((prevMsgs) => [
         ...prevMsgs,
-        { text: msg, sentByCurrUser: true },
+        { text: msgToBeSent, sentByCurrUser: true },
       ]);
 
       setMsg("");
@@ -85,7 +95,7 @@ const Chat = () => {
             key={index}
             className={`m-5 ${msg.sentByCurrUser ? `text-right` : `text-left`}`}
           >
-            {msg.text}
+            {msg.text.text}
           </div>
         ))}
       </div>
