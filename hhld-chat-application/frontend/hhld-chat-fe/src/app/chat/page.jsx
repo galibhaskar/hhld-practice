@@ -1,28 +1,41 @@
 "use client";
 import React, { useState, useEffect, useCallback } from "react";
 import io from "socket.io-client";
+import { useAuthStore } from "../zustand/useAuthStore";
+import { useUsersStore } from "../zustand/useUsersStore";
+import { useChatReceiverStore } from "../zustand/useChatReceiverStore";
+import { useChatMessagesStore } from "../zustand/useChatMessagesStore";
+import axios from "axios";
+import ChatUsers from "../_components/chatUsers/page.jsx";
 
 const Chat = () => {
-  const [messages, setMessages] = useState([]);
+  // const [messages, setMessages] = useState([]);
 
   const [msg, setMsg] = useState("");
 
   const [socket, setSocket] = useState(null);
 
-  const createSocket = useCallback(() => {
+  const { authName } = useAuthStore();
+
+  const { updateUsers } = useUsersStore();
+
+  const { receiver, updateChatReceiver } = useChatReceiverStore();
+
+  const { chatMsgs, updateChatMsgs } = useChatMessagesStore();
+
+  const createSocket = () => {
     console.log("create socket function");
 
     const newSocket = io("http://localhost:8080", {
       query: {
-        username: "bhask",
+        username: authName,
       },
     });
 
     newSocket.on("chat msg", (msg) => {
-      setMessages((prevMsgs) => [
-        ...prevMsgs,
-        { text: msg, sentByCurrUser: false },
-      ]);
+      console.log(msg);
+
+      updateChatMsgs([...chatMsgs, msg]);
     });
 
     setSocket((prevSocket) => {
@@ -32,11 +45,13 @@ const Chat = () => {
 
       return newSocket;
     });
-  }, []);
+  };
 
   useEffect(() => {
     // Establish WebSocket connection
     createSocket();
+
+    getUserData();
 
     return () => {
       console.log("clean up");
@@ -49,14 +64,36 @@ const Chat = () => {
     };
   }, []);
 
+  const getUserData = async () => {
+    try {
+      const response = await axios.get("http://localhost:4000/users", {
+        withCredentials: true,
+      });
+
+      if (response.status == 200) {
+        const users = response.data;
+
+        console.log(users);
+
+        updateUsers(users);
+
+        if (users.length !== 0) {
+          updateChatReceiver(users[0].username);
+        }
+      }
+    } catch (error) {
+      console.log("error in chat:" + error.message);
+    }
+  };
+
   const sendMsg = (e) => {
     e.preventDefault();
 
     if (socket) {
       const msgToBeSent = {
         text: msg,
-        sender: "bhask",
-        receiver: "keerthi",
+        sender: authName,
+        receiver: receiver,
       };
 
       // send message with event 'chat msg' and receive response for ack.
@@ -64,10 +101,7 @@ const Chat = () => {
         console.log("response from server:" + res);
       });
 
-      setMessages((prevMsgs) => [
-        ...prevMsgs,
-        { text: msgToBeSent, sentByCurrUser: true },
-      ]);
+      updateChatMsgs([...chatMsgs, msgToBeSent]);
 
       setMsg("");
     }
@@ -87,76 +121,94 @@ const Chat = () => {
     }
   };
 
+  console.log("chatMsgs:", chatMsgs);
+
   return (
-    <div className="h-screen flex flex-col">
-      <div className="msgs-container h-4/5 overflow-scroll">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`m-5 ${msg.sentByCurrUser ? `text-right` : `text-left`}`}
-          >
-            {msg.text.text}
-          </div>
-        ))}
+    <div className="h-screen flex divide-x-4">
+      <div className="w-1/5">
+        <ChatUsers />
       </div>
-      <div>
-        <form onSubmit={sendMsg} className="max-w-md mx-auto my-10">
-          <div className="relative">
-            <input
-              type="text"
-              value={msg}
-              onChange={handleChange}
-              placeholder="Type your text here"
-              required
-              className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg
+      <div className="h-screen flex flex-col w-4/5">
+        <div className="mx-auto h-1/5">
+          {authName} is chatting with {receiver}
+        </div>
+        <div className="msgs-container h-3/5 overflow-scroll">
+          {chatMsgs?.map((msg, index) => (
+            <div
+              key={index}
+              className={`m-5 ${
+                msg.sender == authName ? `text-right` : `text-left`
+              }`}
+            >
+              <span
+                className={`rounded-xl p-2 m-2 text-white border ${
+                  msg.sender == authName ? "bg-blue-400" : "bg-green-400"
+                }`}
+              >
+                {msg.text}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div>
+          <form onSubmit={sendMsg} className="max-w-md mx-auto my-10">
+            <div className="relative">
+              <input
+                type="text"
+                value={msg}
+                onChange={handleChange}
+                placeholder="Type your text here"
+                required
+                className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg
 bg-gray-50 focus:ring-blue-500 focus:border-blue-500
 dark:bg-gray-700 dark:border-gray-600
 dark:placeholder-gray-400 dark:text-white
 dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            />
+              />
 
-            {socket == null ? (
-              <button
-                type="button"
-                onClick={() => {
-                  createSocket();
-                }}
-                className="text-white absolute end-2.5
+              {socket == null ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    createSocket();
+                  }}
+                  className="text-white absolute end-2.5
 bottom-2.5 bg-green-700 hover:bg-green-800 focus:ring-4
 focus:outline-none focus:ring-green-300 font-medium
 rounded-lg text-sm px-4 py-2 dark:bg-green-600
 dark:hover:bg-green-700 dark:focus:ring-green-800"
-              >
-                Connect
-              </button>
-            ) : (
-              <div>
-                <button
-                  type="submit"
-                  className="text-white absolute end-30
+                >
+                  Connect
+                </button>
+              ) : (
+                <div>
+                  <button
+                    type="submit"
+                    className="text-white absolute end-30
 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4
 focus:outline-none focus:ring-blue-300 font-medium
 rounded-lg text-sm px-4 py-2 dark:bg-blue-600
 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-                >
-                  Send
-                </button>
+                  >
+                    Send
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={handleDisconnect}
-                  className="text-white absolute end-2.5
+                  <button
+                    type="button"
+                    onClick={handleDisconnect}
+                    className="text-white absolute end-2.5
 bottom-2.5 bg-red-700 hover:bg-red-800 focus:ring-4
 focus:outline-none focus:ring-red-300 font-medium
 rounded-lg text-sm px-4 py-2 dark:bg-red-600
 dark:hover:bg-red-700 dark:focus:ring-red-800"
-                >
-                  Disconnect
-                </button>
-              </div>
-            )}
-          </div>
-        </form>
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              )}
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

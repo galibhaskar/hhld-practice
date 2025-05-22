@@ -2,6 +2,7 @@
 import axios, { HttpStatusCode } from "axios";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "./zustand/useAuthStore.js";
 
 export const Auth = () => {
   const router = useRouter();
@@ -9,6 +10,8 @@ export const Auth = () => {
   const [userName, setUserName] = useState("");
 
   const [password, setPassword] = useState("");
+
+  const { authName, updateAuthName } = useAuthStore();
 
   const AUTH_DOMAIN = "http://localhost:4000/auth";
 
@@ -27,6 +30,8 @@ export const Auth = () => {
 
       if (response.status == HttpStatusCode.Created) {
         alert("User Created");
+
+        updateAuthName(userName);
 
         router.replace("/chat");
       }
@@ -50,6 +55,8 @@ export const Auth = () => {
 
       if (response.status == HttpStatusCode.Created) {
         alert("login success");
+
+        updateAuthName(userName);
 
         router.replace("/chat");
       }
