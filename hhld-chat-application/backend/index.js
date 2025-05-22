@@ -2,6 +2,10 @@ import express from "express";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
 import http from "http";
+import connectToMongoDB from "../backend/db/connectToMongoDB.js";
+import { addMsgsToConversation } from "./controllers/msgs.controller.js";
+import ChatRouter from "./routes/msgs.route.js";
+import cors from 'cors';
 
 // load the variables from .env file
 dotenv.config();
@@ -11,6 +15,8 @@ const PORT = process.env.PORT || 3000;
 
 // creation of express application
 const app = express();
+
+app.use(cors());
 
 // express handles the HTTP requests when we do app.listen(PORT).
 // app.listen(PORT): internally creates the http server and binds to given PORT.
@@ -30,9 +36,15 @@ const io = new Server(httpServer, {
   // Cross-Orgin-Resource-Sharing
   cors: {
     allowedHeaders: ["*"],
-    origin: "*",
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3002",
+    ],
   },
 });
+
+const userSocketMap = {};
 
 // accepting the incoming websocket connection
 io.on("connection", (socket) => {
@@ -42,14 +54,24 @@ io.on("connection", (socket) => {
 
   console.log("username:", username);
 
+  userSocketMap[username] = socket;
+
   // receiving the messages on existing websocket conn sent on the event: 'chat msg'
   socket.on("chat msg", (msg) => {
     console.log("Received msg:" + msg.text);
     console.log("sender:" + msg.sender);
     console.log("receiver:" + msg.receiver);
 
+    const receiverSocket = userSocketMap[msg.receiver];
+
+    if (receiverSocket) {
+      receiverSocket.emit("chat msg", msg);
+    }
+
+    addMsgsToConversation([msg.sender, msg.receiver], msg);
+
     // broadcasting/send the message for all the conn clients with the event 'chat msg' except the current socket conn.
-    socket.broadcast.emit("chat msg", msg);
+    // socket.broadcast.emit("chat msg", msg);
   });
 
   // websocket disconnect event
@@ -58,6 +80,8 @@ io.on("connection", (socket) => {
   });
 });
 
+app.use("/msgs", ChatRouter);
+
 app.get("/", (req, res) => {
   res.send("Welcome to HHLD");
 });
@@ -65,5 +89,6 @@ app.get("/", (req, res) => {
 // Ensure listening on custom HTTP server that we created,
 // instead of default express app HTTP server.
 httpServer.listen(PORT, (req, res) => {
+  connectToMongoDB();
   console.log(`server running at http://localhost:${PORT}`);
 });
