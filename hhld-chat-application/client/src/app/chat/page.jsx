@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
 import { useAuthStore } from "../zustand/useAuthStore";
 import { useUsersStore } from "../zustand/useUsersStore";
@@ -7,6 +7,7 @@ import { useChatReceiverStore } from "../zustand/useChatReceiverStore";
 import { useChatMessagesStore } from "../zustand/useChatMessagesStore";
 import axios from "axios";
 import ChatUsers from "../_components/chatUsers/page.jsx";
+import { AUTH_DOMAIN, BACKEND_DOMAIN } from "../config.js";
 
 const Chat = () => {
   // const [messages, setMessages] = useState([]);
@@ -26,7 +27,7 @@ const Chat = () => {
   const createSocket = () => {
     console.log("create socket function");
 
-    const newSocket = io("http://localhost:8080", {
+    const newSocket = io(BACKEND_DOMAIN, {
       query: {
         username: authName,
       },
@@ -66,7 +67,7 @@ const Chat = () => {
 
   const getUserData = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/users", {
+      const response = await axios.get(`${AUTH_DOMAIN}/users`, {
         withCredentials: true,
       });
 

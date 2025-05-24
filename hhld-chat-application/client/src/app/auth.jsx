@@ -3,6 +3,7 @@ import axios, { HttpStatusCode } from "axios";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "./zustand/useAuthStore.js";
+import { AUTH_DOMAIN } from "./config.js";
 
 export const Auth = () => {
   const router = useRouter();
@@ -13,8 +14,6 @@ export const Auth = () => {
 
   const { authName, updateAuthName } = useAuthStore();
 
-  const AUTH_DOMAIN = "http://localhost:4000/auth";
-
   const signup = async (event) => {
     event.preventDefault();
 
@@ -24,7 +23,7 @@ export const Auth = () => {
         password: password,
       };
 
-      const response = await axios.post(`${AUTH_DOMAIN}/signup`, payload, {
+      const response = await axios.post(`${AUTH_DOMAIN}/auth/signup`, payload, {
         withCredentials: true,
       });
 
@@ -49,7 +48,7 @@ export const Auth = () => {
         password: password,
       };
 
-      const response = await axios.post(`${AUTH_DOMAIN}/login`, payload, {
+      const response = await axios.post(`${AUTH_DOMAIN}/auth/login`, payload, {
         withCredentials: true,
       });
 
