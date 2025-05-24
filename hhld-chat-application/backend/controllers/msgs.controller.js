@@ -2,9 +2,9 @@ import Conversation from "../models/chat.model.js";
 
 export const addMsgsToConversation = async (participants, msg) => {
   try {
-    console.log(participants);
+    // console.log(participants);
 
-    console.log(msg);
+    // console.log(msg);
 
     // Find conversation by participants
     let conversation = await Conversation.findOne({
@@ -36,13 +36,13 @@ export const getMsgsofConversation = async (req, res) => {
 
     const participants = [sender, receiver];
 
-    console.log(participants);
+    // console.log(participants);
 
     const conversation = await Conversation.findOne({
       users: { $all: participants },
     });
 
-    console.log(conversation);
+    // console.log(conversation);
 
     if (!conversation) {
       return res.status(200).json([]);
