@@ -2,10 +2,11 @@ import express from "express";
 import dotenv from "dotenv";
 import { Server } from "socket.io";
 import http from "http";
-import connectToMongoDB from "../backend/db/connectToMongoDB.js";
+import connectToMongoDB from "./db/connectToMongoDB.js";
 import { addMsgsToConversation } from "./controllers/msgs.controller.js";
 import ChatRouter from "./routes/msgs.route.js";
-import cors from 'cors';
+import cors from "cors";
+import { subscribe, publish } from "./redis/msgsPubSub.js";
 
 // load the variables from .env file
 dotenv.config();
@@ -56,6 +57,13 @@ io.on("connection", (socket) => {
 
   userSocketMap[username] = socket;
 
+  const channelName = `chat_${username}`;
+
+  // listen to any messages on the channel from different server conns.
+  subscribe(channelName, (msg) => {
+    socket.emit("chat msg", JSON.parse(msg));
+  });
+
   // receiving the messages on existing websocket conn sent on the event: 'chat msg'
   socket.on("chat msg", (msg) => {
     console.log("Received msg:" + msg.text);
@@ -66,6 +74,12 @@ io.on("connection", (socket) => {
 
     if (receiverSocket) {
       receiverSocket.emit("chat msg", msg);
+    } else {
+      // if current socket not in map, then publish to redis
+
+      const channelName = `chat_${msg.receiver}`;
+
+      publish(channelName, JSON.parse(msg));
     }
 
     addMsgsToConversation([msg.sender, msg.receiver], msg);
