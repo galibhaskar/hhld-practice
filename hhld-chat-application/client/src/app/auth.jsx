@@ -12,7 +12,7 @@ export const Auth = () => {
 
   const [password, setPassword] = useState("");
 
-  const { authName, updateAuthName } = useAuthStore();
+  const { updateAuthName } = useAuthStore();
 
   const signup = async (event) => {
     event.preventDefault();
@@ -41,6 +41,8 @@ export const Auth = () => {
 
   const login = async (event) => {
     event.preventDefault();
+
+    console.log(AUTH_DOMAIN);
 
     try {
       const payload = {

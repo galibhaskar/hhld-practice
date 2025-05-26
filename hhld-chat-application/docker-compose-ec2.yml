@@ -1,28 +1,20 @@
 services:
   backend1:
-    build:
-      context: ./backend
     image: designwithbhaskar/chat-backend1:lts
     ports: 
      - "8080:8080"
 
   backend2:
-    build:
-      context: ./backend
     image: designwithbhaskar/chat-backend2:lts
     ports:
       - "8081:8080"
 
   auth-backend:
-    build:
-      context: ./auth-backend
     image: designwithbhaskar/chat-auth-backend:lts
     ports:
       - "4000:4000"
 
   client1:
-    build:
-      context: ./client
     image: designwithbhaskar/chat-client1:lts
     ports:
       - "3000:3000"
@@ -30,8 +22,6 @@ services:
       - backend1
 
   client2:
-    build:
-      context: ./client_2
     image: designwithbhaskar/chat-client2:lts
     ports: 
       - "3001:3000"

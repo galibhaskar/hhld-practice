@@ -38,9 +38,9 @@ const io = new Server(httpServer, {
   cors: {
     allowedHeaders: ["*"],
     origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:3002",
+      `${process.env.BE_HOST}:3000`,
+      `${process.env.BE_HOST}:3001`,
+      `${process.env.BE_HOST}:3002`,
     ],
   },
 });
@@ -79,7 +79,7 @@ io.on("connection", (socket) => {
 
       const channelName = `chat_${msg.receiver}`;
 
-      publish(channelName, JSON.parse(msg));
+      publish(channelName, JSON.stringify(msg));
     }
 
     addMsgsToConversation([msg.sender, msg.receiver], msg);
