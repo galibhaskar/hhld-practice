@@ -1,22 +1,24 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
-import { useAuthStore } from "../zustand/useAuthStore";
-import { useUsersStore } from "../zustand/useUsersStore";
-import { useChatReceiverStore } from "../zustand/useChatReceiverStore";
-import { useChatMessagesStore } from "../zustand/useChatMessagesStore";
+import { useAuthStore } from "../zustand/useAuthStore.js";
+import { useUsersStore } from "../zustand/useUsersStore.js";
+import { useChatReceiverStore } from "../zustand/useChatReceiverStore.js";
+import { useChatMessagesStore } from "../zustand/useChatMessagesStore.js";
 import axios from "axios";
-import ChatUsers from "../_components/chatUsers/page.jsx";
+import ChatUsers from "../_components/chatUsers/page.js";
 import { AUTH_DOMAIN, BACKEND_DOMAIN } from "../config.js";
+import { useRouter } from "next/navigation";
 
 const Chat = () => {
+  const router = useRouter();
   // const [messages, setMessages] = useState([]);
 
   const [msg, setMsg] = useState("");
 
   const [socket, setSocket] = useState(null);
 
-  const { authName } = useAuthStore();
+  const { authName, updateAuthName } = useAuthStore();
 
   const { updateUsers } = useUsersStore();
 
@@ -49,21 +51,25 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    // Establish WebSocket connection
-    createSocket();
+    if (authName) {
+      // Establish WebSocket connection
+      createSocket();
 
-    getUserData();
+      getUserData();
 
-    return () => {
-      console.log("clean up");
+      return () => {
+        console.log("clean up");
 
-      if (socket) {
-        socket.disconnect();
+        if (socket) {
+          socket.disconnect();
 
-        setSocket(null);
-      }
-    };
-  }, []);
+          setSocket(null);
+        }
+      };
+    } else {
+      router.replace("/");
+    }
+  }, [authName]);
 
   const getUserData = async () => {
     try {
@@ -121,8 +127,6 @@ const Chat = () => {
       console.log("disconnected");
     }
   };
-
-  console.log("chatMsgs:", chatMsgs);
 
   return (
     <div className="h-screen flex divide-x-4">

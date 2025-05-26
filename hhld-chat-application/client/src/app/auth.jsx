@@ -1,6 +1,6 @@
 "use client";
 import axios, { HttpStatusCode } from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "./zustand/useAuthStore.js";
 import { AUTH_DOMAIN } from "./config.js";
@@ -12,7 +12,7 @@ export const Auth = () => {
 
   const [password, setPassword] = useState("");
 
-  const { updateAuthName } = useAuthStore();
+  const { authName, updateAuthName } = useAuthStore();
 
   const signup = async (event) => {
     event.preventDefault();

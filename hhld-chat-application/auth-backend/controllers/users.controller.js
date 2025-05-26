@@ -11,3 +11,15 @@ export const getUsers = async (req, res) => {
     res.status(500).json({ message: "Users fetch failed" });
   }
 };
+
+export const getCurrentUserInfo = async (req, res) => {
+  try {
+    const { userID } = req;
+
+    const userInfo = await User.find({ _id: userID });
+
+    res.status(200).json(userInfo);
+  } catch (error) {
+    res.status(500).json({ message: "Unable to fetch user information" });
+  }
+};

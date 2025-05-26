@@ -16,9 +16,11 @@ const ChatUsers = () => {
   const { updateChatMsgs, clearMsgs } = useChatMessagesStore();
 
   useEffect(() => {
-    clearMsgs();
-    
-    getChatMessages();
+    if (receiver) {
+      clearMsgs();
+
+      getChatMessages();
+    }
   }, [receiver]);
 
   const getChatMessages = async () => {
@@ -29,7 +31,7 @@ const ChatUsers = () => {
 
       updateChatMsgs(response.data);
 
-      console.log("messages:", response.data);
+      // console.log("messages:", response.data);
     } catch (error) {
       console.log("error in fetching the messages:", error.message);
     }
@@ -41,7 +43,9 @@ const ChatUsers = () => {
         <div
           key={index}
           className={`rounded-xl m-3 p-5 ${
-            user.username == receiver ? "bg-slate-800 text-white" : "bg-slate-400"
+            user.username == receiver
+              ? "bg-slate-800 text-white"
+              : "bg-slate-400"
           }`}
           onClick={() => updateChatReceiver(user.username)}
         >

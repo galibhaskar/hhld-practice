@@ -1,7 +1,7 @@
 "use client";
 import axios, { HttpStatusCode } from "axios";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation.js";
 import { useAuthStore } from "./zustand/useAuthStore.js";
 import { AUTH_DOMAIN } from "./config.js";
 
@@ -41,6 +41,8 @@ export const Auth = () => {
 
   const login = async (event) => {
     event.preventDefault();
+
+    console.log(AUTH_DOMAIN);
 
     try {
       const payload = {

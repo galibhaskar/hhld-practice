@@ -8,15 +8,17 @@ import { useChatMessagesStore } from "../zustand/useChatMessagesStore";
 import axios from "axios";
 import ChatUsers from "../_components/chatUsers/page.jsx";
 import { AUTH_DOMAIN, BACKEND_DOMAIN } from "../config.js";
+import { useRouter } from "next/navigation";
 
 const Chat = () => {
+  const router = useRouter();
   // const [messages, setMessages] = useState([]);
 
   const [msg, setMsg] = useState("");
 
   const [socket, setSocket] = useState(null);
 
-  const { authName } = useAuthStore();
+  const { authName, updateAuthName } = useAuthStore();
 
   const { updateUsers } = useUsersStore();
 
@@ -49,21 +51,25 @@ const Chat = () => {
   };
 
   useEffect(() => {
-    // Establish WebSocket connection
-    createSocket();
+    if (authName) {
+      // Establish WebSocket connection
+      createSocket();
 
-    getUserData();
+      getUserData();
 
-    return () => {
-      console.log("clean up");
+      return () => {
+        console.log("clean up");
 
-      if (socket) {
-        socket.disconnect();
+        if (socket) {
+          socket.disconnect();
 
-        setSocket(null);
-      }
-    };
-  }, []);
+          setSocket(null);
+        }
+      };
+    } else {
+      router.replace("/");
+    }
+  }, [authName]);
 
   const getUserData = async () => {
     try {
@@ -121,8 +127,6 @@ const Chat = () => {
       console.log("disconnected");
     }
   };
-
-  console.log("chatMsgs:", chatMsgs);
 
   return (
     <div className="h-screen flex divide-x-4">
