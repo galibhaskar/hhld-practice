@@ -5,7 +5,7 @@ const app = express();
 const PORT = 3000;
 
 app.get("/", (req, res) => {
-  res.send("Welcome to ECS Demo");
+  res.send("Welcome to ECS Demo - version 2");
 });
 
 app.get("/health", (req, res) => {
