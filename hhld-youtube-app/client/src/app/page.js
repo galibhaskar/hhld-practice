@@ -1,11 +1,13 @@
 // import Room from "./pages/room";
-import UploadPage from "./pages/uploadPage";
+import AuthPage from "./pages/auth";
+// import UploadPage from "./pages/uploadPage";
 
 export default function Home() {
   return (
     <div>
       {/* <Room /> */}
-      <UploadPage />
+      {/* <UploadPage /> */}
+      <AuthPage />
     </div>
   );
 }
