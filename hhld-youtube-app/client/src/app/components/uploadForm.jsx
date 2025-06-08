@@ -18,6 +18,27 @@ const UploadForm = () => {
 
   const handleFileUpload = async (file) => {
     try {
+      // Step-1:Initialize Multipart Upload
+      const initializeFormData = new FormData();
+
+      initializeFormData.append("filename", file.name);
+
+      const initializeResponse = await axios.post(
+        `${process.env.NEXT_PUBLIC_UPLOAD_SERVICE_URI}/initiate`,
+        initializeFormData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      const { uploadID } = initializeResponse.data;
+
+      console.log("uploadID:", uploadID);
+
+      //Step-2: Upload Parts using UploadID
+
       let chunkSize = Number(process.env.NEXT_PUBLIC_FILE_CHUNK_SIZE);
 
       let fileSize = file.size;
@@ -36,15 +57,17 @@ const UploadForm = () => {
 
         start += chunkSize;
 
-        const formData = new FormData();
+        const chunkFormData = new FormData();
 
-        formData.append("filename", file.name);
+        chunkFormData.append("filename", file.name);
 
-        formData.append("chunk", chunk);
+        chunkFormData.append("chunk", chunk);
 
-        formData.append("totalChunks", totalchunks);
+        chunkFormData.append("totalChunks", totalchunks);
 
-        formData.append("chunkIndex", chunkIndex);
+        chunkFormData.append("chunkIndex", chunkIndex);
+
+        chunkFormData.append("uploadID", uploadID);
 
         console.log("chunkIndex:", chunkIndex, " data:", chunk);
 
@@ -52,16 +75,29 @@ const UploadForm = () => {
 
         const response = await axios.post(
           process.env.NEXT_PUBLIC_UPLOAD_SERVICE_URI,
-          formData,
+          chunkFormData,
           {
             headers: {
-              "Content-Type": "multipart/formdata",
+              "Content-Type": "multipart/form-data",
             },
           }
         );
 
         console.log(response.data);
       }
+
+      // Step-3: Complete Multipart uplod
+
+      const completeResponse = await axios.post(
+        `${process.env.NEXT_PUBLIC_UPLOAD_SERVICE_URI}/complete`,
+        {
+          filename: file.name,
+          uploadID: uploadID,
+          totalChunks: totalchunks,
+        }
+      );
+
+      console.log(completeResponse.data);
 
       // const formData = new FormData();
 

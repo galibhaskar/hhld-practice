@@ -1,7 +1,11 @@
 import express from "express";
 import uploadFileToS3 from "../controllers/upload.controller.js";
 import multer from "multer";
-import multipartUploadFileToS3 from "../controllers/multipartupload.controller.js";
+import multipartUploadFileToS3, {
+  completeMultipartUpload,
+  initiateMultipartUpload,
+  uploadChunk,
+} from "../controllers/multipartupload.controller.js";
 
 const router = express.Router();
 
@@ -27,6 +31,27 @@ const multerParser = multer();
 //   uploadFileToS3
 // );
 
-router.post("/", multipartUploadFileToS3);
+// router.post("/", multipartUploadFileToS3);
+
+// whenever we are using multer and try to access body, we should use multer.none()
+router.post("/initiate", multerParser.none(), initiateMultipartUpload);
+
+router.post(
+  "/",
+  multerParser.fields([
+    {
+      name: "chunk",
+    },
+    {
+      name: "totalChunks",
+    },
+    {
+      name: "chunkIndex",
+    },
+  ]),
+  uploadChunk
+);
+
+router.post("/complete", completeMultipartUpload);
 
 export default router;
