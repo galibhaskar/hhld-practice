@@ -39,6 +39,8 @@ const UploadForm = () => {
 
       //Step-2: Upload Parts using UploadID
 
+      const uploadPromises = [];
+
       let chunkSize = Number(process.env.NEXT_PUBLIC_FILE_CHUNK_SIZE);
 
       let fileSize = file.size;
@@ -73,7 +75,7 @@ const UploadForm = () => {
 
         console.log("uploading chunk", chunkIndex + 1, " out of ", totalchunks);
 
-        const response = await axios.post(
+        const uploadPromise = axios.post(
           process.env.NEXT_PUBLIC_UPLOAD_SERVICE_URI,
           chunkFormData,
           {
@@ -83,8 +85,10 @@ const UploadForm = () => {
           }
         );
 
-        console.log(response.data);
+        uploadPromises.push(uploadPromise);
       }
+
+      await Promise.all(uploadPromises);
 
       // Step-3: Complete Multipart uplod
 
