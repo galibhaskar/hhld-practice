@@ -19,8 +19,8 @@ function Room() {
     <div>
       <div>
         <ReactPlayer
-          width={100}
-          height={100}
+          width={1024}
+          height={500}
           url="https://www.youtube.com/watch?v=LXb3EKWsInQ"
           controls
         />

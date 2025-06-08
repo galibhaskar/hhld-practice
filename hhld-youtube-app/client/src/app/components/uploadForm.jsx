@@ -18,21 +18,66 @@ const UploadForm = () => {
 
   const handleFileUpload = async (file) => {
     try {
-      const formData = new FormData();
+      let chunkSize = Number(process.env.NEXT_PUBLIC_FILE_CHUNK_SIZE);
 
-      formData.append("file", file);
+      let fileSize = file.size;
 
-      const response = await axios.post(
-        "http://localhost:4000/upload",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      let totalchunks = Math.ceil(fileSize / chunkSize);
 
-      console.log(response.data);
+      console.log("chunk size", chunkSize);
+
+      console.log("file size", fileSize);
+
+      console.log("total chunks:", totalchunks);
+
+      let start = 0;
+      for (let chunkIndex = 0; chunkIndex < totalchunks; chunkIndex++) {
+        const chunk = file.slice(start, start + chunkSize);
+
+        start += chunkSize;
+
+        const formData = new FormData();
+
+        formData.append("filename", file.name);
+
+        formData.append("chunk", chunk);
+
+        formData.append("totalChunks", totalchunks);
+
+        formData.append("chunkIndex", chunkIndex);
+
+        console.log("chunkIndex:", chunkIndex, " data:", chunk);
+
+        console.log("uploading chunk", chunkIndex + 1, " out of ", totalchunks);
+
+        const response = await axios.post(
+          process.env.NEXT_PUBLIC_UPLOAD_SERVICE_URI,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/formdata",
+            },
+          }
+        );
+
+        console.log(response.data);
+      }
+
+      // const formData = new FormData();
+
+      // formData.append("file", file);
+
+      // const response = await axios.post(
+      //   "http://localhost:4000/upload",
+      //   formData,
+      //   {
+      //     headers: {
+      //       "Content-Type": "multipart/form-data",
+      //     },
+      //   }
+      // );
+
+      // console.log(response.data);
     } catch (exception) {
       console.log("exception in handleFileupload", exception);
     }
