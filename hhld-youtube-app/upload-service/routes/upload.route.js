@@ -5,6 +5,7 @@ import multipartUploadFileToS3, {
   completeMultipartUpload,
   initiateMultipartUpload,
   uploadChunk,
+  uploadToDB,
 } from "../controllers/multipartupload.controller.js";
 
 const router = express.Router();
@@ -53,5 +54,7 @@ router.post(
 );
 
 router.post("/complete", completeMultipartUpload);
+
+router.post("/uploadToDB", uploadToDB);
 
 export default router;

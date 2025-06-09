@@ -1,5 +1,6 @@
 import AWS from "aws-sdk";
 import fs from "fs";
+import addVideoDetailsToDB from "../db/db.js";
 
 export const initiateMultipartUpload = async (req, res) => {
   try {
@@ -55,7 +56,6 @@ export const uploadChunk = async (req, res) => {
 
     console.log("chunk:", chunk[0]);
 
-
     AWS.config.update({
       region: process.env.AWS_REGION,
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -88,7 +88,8 @@ export const completeMultipartUpload = async (req, res) => {
   try {
     console.log("completing multipart upload");
 
-    const { filename, totalChunks, uploadID } = req.body;
+    const { filename, totalChunks, uploadID, title, author, description } =
+      req.body;
 
     // const uploadedParts = [];
 
@@ -126,6 +127,13 @@ export const completeMultipartUpload = async (req, res) => {
       .promise();
 
     console.log("response:", uploadResponse);
+
+    await addVideoDetailsToDB(
+      title,
+      description,
+      author,
+      uploadResponse.Location
+    );
 
     res.status(200).json({ message: "Upload Successful" });
   } catch (error) {
@@ -230,6 +238,22 @@ const multipartUploadFileToS3 = async (req, res) => {
 
     res.status(400).send("Error in uploading the file to S3", err);
   } finally {
+  }
+};
+
+export const uploadToDB = async (req, res) => {
+  console.log("uploading to db");
+
+  try {
+    const { author, title, description, url } = req.body;
+
+    await addVideoDetailsToDB(title, description, author, url);
+
+    res.status(200).json({ message: "uploaded to db" });
+  } catch (error) {
+    console.log("error in uploading to db");
+
+    res.status(500).json({ error: error });
   }
 };
 

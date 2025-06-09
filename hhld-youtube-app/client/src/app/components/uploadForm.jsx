@@ -5,6 +5,12 @@ import axios from "axios";
 const UploadForm = () => {
   const [selectedFile, setSelectedFile] = useState(null);
 
+  const [title, setTitle] = useState("");
+
+  const [description, setDescription] = useState("");
+
+  const [author, setAuthor] = useState("");
+
   const handleFileChange = (event) => {
     console.log("handle file change called");
     setSelectedFile(event.target.files[0]);
@@ -18,6 +24,12 @@ const UploadForm = () => {
 
   const handleFileUpload = async (file) => {
     try {
+      if (!author || !title) {
+        alert("Required fields are missing");
+
+        return;
+      }
+
       // Step-1:Initialize Multipart Upload
       const initializeFormData = new FormData();
 
@@ -98,6 +110,9 @@ const UploadForm = () => {
           filename: file.name,
           uploadID: uploadID,
           totalChunks: totalchunks,
+          author: author,
+          title: title,
+          description: description,
         }
       );
 
@@ -126,7 +141,47 @@ const UploadForm = () => {
   return (
     <div>
       <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <input
+            type="text"
+            name="title"
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            className="px-3 py-2 w-full border rounded-md focus:outline-none
+focus:border-blue-500"
+          />
+        </div>
+
+        <div className="mb-4">
+          <input
+            type="text"
+            name="description"
+            placeholder="Description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            className="px-3 py-2 w-full border rounded-md focus:outline-none
+focus:border-blue-500"
+          />
+        </div>
+
+        <div className="mb-4">
+          <input
+            type="text"
+            name="author"
+            placeholder="Author"
+            value={author}
+            onChange={(e) => setAuthor(e.target.value)}
+            required
+            className="px-3 py-2 w-full border rounded-md focus:outline-none
+focus:border-blue-500"
+          />
+        </div>
+
         <input type="file" onChange={handleFileChange} />
+
         <button
           type="submit"
           className="text-white bg-gradient-to-br from-purple-600
