@@ -2,6 +2,7 @@ import express, { json } from "express";
 import dotenv from "dotenv";
 import watchRouter from "./routes/watch.route.js";
 import cors from "cors";
+import homeRouter from "./routes/home.route.js";
 
 dotenv.config();
 
@@ -14,6 +15,8 @@ app.use(cors());
 app.use(json());
 
 app.use("/watch", watchRouter);
+
+app.use("/home", homeRouter);
 
 app.get("/", (req, res) => {
   res.status(200).send("Welcome to watch service");

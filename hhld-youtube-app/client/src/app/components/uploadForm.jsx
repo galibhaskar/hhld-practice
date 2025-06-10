@@ -140,7 +140,7 @@ const UploadForm = () => {
 
   return (
     <div>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="mx-auto max-w-lg">
         <div className="mb-4">
           <input
             type="text"
