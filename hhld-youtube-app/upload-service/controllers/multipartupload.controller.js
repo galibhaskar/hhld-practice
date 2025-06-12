@@ -1,6 +1,7 @@
 import AWS from "aws-sdk";
 import fs from "fs";
 import addVideoDetailsToDB from "../db/db.js";
+import { pushVideoForEncoding } from "./kafkapublisher.controller.js";
 
 export const initiateMultipartUpload = async (req, res) => {
   try {
@@ -42,6 +43,24 @@ export const initiateMultipartUpload = async (req, res) => {
 
 export const uploadChunk = async (req, res) => {
   try {
+    AWS.config.update({
+      region: process.env.AWS_REGION,
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    });
+
+    const s3 = new AWS.S3();
+
+    // const result = await s3
+    //   .listMultipartUploads({
+    //     Bucket: "your-bucket-name",
+    //   })
+    //   .promise();
+
+    // console.log("------------------------------------");
+    // console.log("active multipart uploads:", result);
+    // console.log("------------------------------------");
+
     console.log("Uploading chunk");
 
     const { filename, chunkIndex, uploadID } = req.body;
@@ -55,14 +74,6 @@ export const uploadChunk = async (req, res) => {
     const { chunk } = req.files;
 
     console.log("chunk:", chunk[0]);
-
-    AWS.config.update({
-      region: process.env.AWS_REGION,
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    });
-
-    const s3 = new AWS.S3();
 
     const partParams = {
       Bucket: process.env.BUCKET,
@@ -134,6 +145,10 @@ export const completeMultipartUpload = async (req, res) => {
       author,
       uploadResponse.Location
     );
+
+    const url = uploadResponse.Location;
+
+    await pushVideoForEncoding(completeParams.Key, url);
 
     res.status(200).json({ message: "Upload Successful" });
   } catch (error) {
